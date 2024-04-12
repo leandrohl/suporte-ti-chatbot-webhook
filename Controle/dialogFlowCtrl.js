@@ -113,8 +113,14 @@ export default class DialogFlowCtrl{
             let respostaDF = { fulfillmentMessages: [] };
 
             try {
-                const usuario = new Usuario(0, nome, email);
-                await usuario.gravar()
+                let usuario = new Usuario(0, nome, email);
+                let usuarioEncontrado = await usuario.consultarPorEmail(email);
+
+                if (usuarioEncontrado == null) {
+                    await usuario.gravar()
+                } else {
+                    usuario = usuarioEncontrado;
+                }
     
                 let categoriaObj = new Categoria();
                 const nomeCategoria = global.sessao[sessaoDF].categoria;
@@ -139,7 +145,7 @@ export default class DialogFlowCtrl{
                     resposta.json(respostaDF);
                 }
                 else {
-                    respostaDF['fulfillmentMessages'] = {
+                    respostaDF['fulfillmentMessages'] = [{
                         "payload": {
                             "richContent": [[
                                 {
@@ -148,12 +154,12 @@ export default class DialogFlowCtrl{
                                     "text": [
                                         "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
                                         "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
-                                        "Prazo para atendimento (em horas)" + chamado.categoria.categoriaPrazoAtendimento
+                                        "Prazo para atendimento (em horas): " + chamado.categoria.categoriaPrazoAtendimento
                                     ]
                                 }
                             ]]
                             }
-                        }
+                        }]
                     resposta.json(respostaDF);
                 }
             } catch (erro) {
@@ -176,12 +182,14 @@ export default class DialogFlowCtrl{
         } else if (intencao == 'ConsultarChamado') {
             let respostaDF = { fulfillmentMessages: [] };
             let chamado = new Chamado();
+            let usuario = new Usuario();
+            let categoria = new Categoria();
 
             chamado = await chamado.consultarPorId(numeroChamado);
 
             if (chamado != null) {
-                let categoria = new Categoria();
                 categoria = await categoria.consultarPorId(chamado.categoria.categoriaId);
+                usuario = await usuario.consultarPorId(chamado.usuario.usuarioId)
 
                 if (ambienteOrigem) {
                     respostaDF['fulfillmentMessages'] = [
@@ -189,7 +197,10 @@ export default class DialogFlowCtrl{
                             "text": {
                                 "text": [
                                     "Segue o status do seu chamado!",
+                                    "Nome do demandante: " + usuario.usuarioNome,
+                                    "Email do demandante: " + usuario.usuarioEmail,
                                     "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
+                                    "Nível de Prioridade: " + chamado.chamadoNivelPrioridade,
                                     "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
                                     "Categoria: " + categoria.categoriaDescricao,
                                     "Prazo para atendimento (em horas): " + categoria.categoriaPrazoAtendimento
@@ -200,7 +211,7 @@ export default class DialogFlowCtrl{
                     resposta.json(respostaDF);
                 }
                 else {
-                    respostaDF['fulfillmentMessages'] = {
+                    respostaDF['fulfillmentMessages'] = [{
                         "payload": {
                             "richContent": [[
                                 {
@@ -208,7 +219,10 @@ export default class DialogFlowCtrl{
                                     "title": "Segue o status do seu chamado!",
                                     "text": [
                                         "Seu chamado foi registrado com sucesso!",
+                                        "Nome do demandante: " + usuario.usuarioNome,
+                                        "Email do demandante: " + usuario.usuarioEmail,
                                         "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
+                                        "Nível de Prioridade: " + chamado.chamadoNivelPrioridade,
                                         "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
                                         "Categoria: " + categoria.categoriaDescricao,
                                         "Prazo para atendimento (em horas): " + categoria.categoriaPrazoAtendimento
@@ -216,7 +230,7 @@ export default class DialogFlowCtrl{
                                 }
                             ]]
                             }
-                        }
+                        }]
                     resposta.json(respostaDF);
                 }
 
@@ -229,7 +243,6 @@ export default class DialogFlowCtrl{
                                 "title":"Código Inválido",
                                 "text":[
                                     "Infelizmente não encontramos nenhum chamado com esse código!",
-                                    erro.message
                                 ]
                             }
                         ]

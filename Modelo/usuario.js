@@ -45,6 +45,16 @@ export default class Usuario {
         return await usuarioDao.consultar();
     }
 
+    async consultarPorId(id){
+        const usuarioDao = new UsuarioDAO();
+        return await usuarioDao.consultarPorId(id);
+    }
+
+    async consultarPorEmail(email){
+        const usuarioDao = new UsuarioDAO();
+        return await usuarioDao.consultarPorEmail(email);
+    }
+
     async gravar(){
         const usuarioDao = new UsuarioDAO();
         return await usuarioDao.gravar(this);

@@ -11,7 +11,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: { maxAge: 1000 * 60 * 10 }
 }))
-// app.use(express.static('./Publico'));
+app.use(express.static('./Publico'));
 
 app.use('/dialogflow', rotaDialogFlow);
 

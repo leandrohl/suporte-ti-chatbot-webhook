@@ -28,4 +28,34 @@ export default class UsuarioDAO {
         }
     }
 
+    async consultarPorId(id) {
+        const conexao = await conectar();
+        const sql = 'SELECT * FROM usuario WHERE id = ?';
+        const parametros = [id]
+
+        const [ registros ] = await conexao.query(sql, parametros);
+        let usuario = null;
+
+        for (const registro of registros) {
+            usuario = new Usuario(registro.id, registro.nome, registro.email);
+            break;
+        }
+        return usuario;
+    }
+
+    async consultarPorEmail(email) {
+        const conexao = await conectar();
+        const sql = 'SELECT * FROM usuario WHERE email = ?';
+        const parametros = [email]
+
+        const [ registros ] = await conexao.query(sql, parametros);
+        let usuario = null;
+
+        for (const registro of registros) {
+            usuario = new Usuario(registro.id, registro.nome, registro.email);
+            break;
+        }
+        return usuario;
+    }
+
 }
