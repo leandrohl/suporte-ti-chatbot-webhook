@@ -1,25 +1,57 @@
-import { obterCardsDoces } from "../Funcoes/DialogFlow/funcoesDialogFlow.js";
-import gravarPedido from '../Persistencia/pedidoDAO.js'
+import { obterCardsCategorias } from "../Funcoes/DialogFlow/funcoesDialogFlow.js";
+import Categoria from "../Modelo/categoria.js";
+import Chamado from '../Modelo/chamado.js'
+import Usuario from '../Modelo/usuario.js'
 
 export default class DialogFlowCtrl{
 
-    processar(requisicao, resposta){
+    async processar(requisicao, resposta){
         resposta.type('application/json');
-        //processar intenção 'InicioAtendimento'
         const intencao = requisicao.body.queryResult.intent.displayName;
         const ambienteOrigem = requisicao.body?.originalDetectIntentRequest?.source;
-        if (intencao && intencao == 'InicioAtendimento'){
+        const categoria = requisicao.body?.queryResult.parameters?.Categoria;
+        const nome = requisicao.body?.queryResult.parameters?.person?.name;
+        const email = requisicao.body?.queryResult.parameters?.email;
+        const nivelPrioridade = requisicao.body?.queryResult.parameters?.nivelprioridade;
+        const numeroChamado = requisicao.body?.queryResult.parameters?.number;
+
+        const sessaoDF = requisicao.body.queryResult.outputContexts?.[0].name.split('/')[4]
+        if (!global.sessao){
+                global.sessao = {}
+        }
+        if (!global.sessao[sessaoDF]) {
+            global.sessao[sessaoDF] = { categoria: '' }
+        }
+
+        if (categoria) {
+            global.sessao[sessaoDF].categoria = categoria;
+        }
+
+        if (intencao && intencao == 'AbrirChamado'){
+
             let respostaDF = { fulfillmentMessages: [] };
-            //deveremos construir uma resposta para essa intenção
+
+            if (categoria !== '') {
+                respostaDF['fulfillmentMessages'] = [
+                    {
+                        "text": {
+                           "text":[
+                                "Obrigado pelas informações! Por favor, informe qual o nível de prioridade do chamado?",
+                           ]
+                        }
+                    }
+                ];
+                resposta.json(respostaDF);
+            };
+
             if (ambienteOrigem){
-                //devolver custom cards
-                obterCardsDoces('custom')
+                obterCardsCategorias('custom')
                 .then((listaCardsCustom)=>{
                     respostaDF['fulfillmentMessages'] = [...listaCardsCustom,
                         {
                             "text": {
                                "text":[
-                                    "Gostaria de fazer um pedido?",
+                                    "Por favor, informe qual a categoria do chamado?",
                                ]
                             }
                         }
@@ -31,8 +63,8 @@ export default class DialogFlowCtrl{
                         {
                             "text": {
                                "text":[
-                                    "Erro ao recuperar a lista de doces:\n",
-                                    "Não foi possível extrair consultar o menu.",
+                                    "Erro ao recuperar a lista de categorias:\n",
+                                    "Não foi possível consultar o menu.",
                                     "Tente novamente mais tarde.",
                                     erro.message
                                ]
@@ -43,16 +75,16 @@ export default class DialogFlowCtrl{
             }
             else{
                 //devolver messenger cards
-                obterCardsDoces('messenger')
+                obterCardsCategorias('messenger')
                 .then((listaCardsMessenger)=>{
                     respostaDF['fulfillmentMessages'] = [{
                         "payload": {
                             "richContent": [[...listaCardsMessenger, 
                                 {
                                     "type":"description",
-                                    "title":"Início de atendimento!",
+                                    "title":"Inicio do Chamado!",
                                     "text":[
-                                        "Gostaria de fazer um pedido?"
+                                        "Por favor, informe qual a categoria do chamado?"
                                     ]
                                 }
                             ]]
@@ -66,9 +98,9 @@ export default class DialogFlowCtrl{
                             "richContent": [
                                 {
                                     "type":"description",
-                                    "title":"Erro ao recuperar a lista de doces",
+                                    "title":"Erro ao recuperar a lista de categorias",
                                     "text":[
-                                        "Infelizmente não foi possível exibir o menu de doces.",
+                                        "Infelizmente não foi possível exibir o menu de categorias.",
                                         erro.message
                                     ]
                                 }
@@ -77,86 +109,78 @@ export default class DialogFlowCtrl{
                     }
                 });  
             }
-        } else if (intencao == 'PedidoDoCliente') {
-                //é preciso temporariamente armazenar os doces que estão sendo pedidos
-                const sessaoDF = requisicao.body.queryResult.outputContexts?.[0].name.split('/')[4]
-                if (!global.sessao){
-                    global.sessao = {}
-                }
-                if (!global.sessao[sessaoDF]) {
-                    global.sessao[sessaoDF] = { doces: [], quantidades: [] }
-                }
-    
-    
-                if (requisicao.body.queryResult.parameters.doce){
-                    global.sessao[sessaoDF].doces = [...global.sessao[sessaoDF].doces, ...requisicao.body.queryResult.parameters.doce];
-                }
-                if (requisicao.body.queryResult.parameters.quantidade){
-                    global.sessao[sessaoDF].quantidades = [...global.sessao[sessaoDF].quantidades, ...requisicao.body.queryResult.parameters.quantidade];
-                }
+        } else if (intencao == 'FinalizarChamado') {
+            let respostaDF = { fulfillmentMessages: [] };
 
-                console.log(global.sessao[sessaoDF].doces)
-            }
-            else if (intencao == 'PedidoDoCliente - no') {
-                //armazenar no banco de dados o pedido do cliente
-                const sessaoDF = requisicao.body.queryResult.outputContexts?.[0].name.split('/')[4];
-                let respostaDF = { fulfillmentMessages: [] };
-                gravarPedido(global.sessao[sessaoDF].quantidades, global.sessao[sessaoDF].doces)
-                    .then((numeroPedido) => {
-                        console.log("numero do pedido: " + numeroPedido);
-                        //apaga os dados da sessão referente a essa conversa
-                        delete global.sessao[sessaoDF];
-                        if (ambienteOrigem) {
-                            respostaDF['fulfillmentMessages'] = [
-                                {
-                                    "text": {
-                                        "text": [
-                                            "Seu pedido foi registrado com sucesso!",
-                                            "Já começamos o preparo e em breve entregaremos para você.",
-                                            "Anote o número do seu pedido: " + numeroPedido,
-                                            "Qual o endereço de entrega?"
-                                        ]
-                                    }
-                                }
-                            ];
-                            resposta.json(respostaDF);
-                        }
-                        else {
-                            respostaDF['fulfillmentMessages'] = {
-                                "payload": {
-                                    "richContent": [[
-                                        {
-                                            "type": "description",
-                                            "title": "Seu pedido foi registrado com sucesso!",
-                                            "text": [
-                                                "Já começamos o preparo e em breve entregaremos para você.",
-                                                "Anote o número do seu pedido: " + numeroPedido,
-                                                "Qual o endereço de entrega?"
-                                            ]
-                                        }
-                                    ]
-                                    ]
-                                }
-                            }
-                            resposta.json(respostaDF);
-                        }
-                    }).catch((erro) => {
-                        respostaDF['fulfillmentMessages'] = {
-                            "payload": {
-                                "richContent": [
-                                    {
-                                        "type":"description",
-                                        "title":"Erro ao salvar pedido",
-                                        "text":[
-                                            "Infelizmente não foi possível salvar seu pedido de doces.",
-                                            erro.message
-                                        ]
-                                    }
+            try {
+                const usuario = new Usuario(0, nome, email);
+                await usuario.gravar()
+    
+                let categoriaObj = new Categoria();
+                const nomeCategoria = global.sessao[sessaoDF].categoria;
+                categoriaObj = await categoriaObj.consultarPeloNome(nomeCategoria);
+                const chamado = new Chamado(0, "Fernando", nivelPrioridade, categoriaObj, usuario);
+
+                await chamado.gravar();
+
+                if (ambienteOrigem) {
+                    respostaDF['fulfillmentMessages'] = [
+                        {
+                            "text": {
+                                "text": [
+                                    "Seu chamado foi registrado com sucesso!",
+                                    "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
+                                    "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                    "Prazo para atendimento (em horas): " + chamado.categoria.categoriaPrazoAtendimento
                                 ]
                             }
                         }
-                        resposta.json(respostaDF);
-                    })
+                    ];
+                    resposta.json(respostaDF);
+                }
+                else {
+                    respostaDF['fulfillmentMessages'] = {
+                        "payload": {
+                            "richContent": [[
+                                {
+                                    "type": "description",
+                                    "title": "Seu chamado foi registrado com sucesso!",
+                                    "text": [
+                                        "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
+                                        "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                        "Prazo para atendimento (em horas)" + chamado.categoria.categoriaPrazoAtendimento
+                                    ]
+                                }
+                            ]]
+                            }
+                        }
+                    resposta.json(respostaDF);
+                }
+            } catch (erro) {
+                respostaDF['fulfillmentMessages'] = {
+                    "payload": {
+                        "richContent": [
+                            {
+                                "type":"description",
+                                "title":"Erro ao salvar chamado",
+                                "text":[
+                                    "Infelizmente não foi possível salvar seu chamado.",
+                                    erro.message
+                                ]
+                            }
+                        ]
+                    }
+                }
+                resposta.json(respostaDF);
             }
+        } else if (intencao == 'ConsultarChamado') {
+            let respostaDF = { fulfillmentMessages: [] };
+            let chamado = new Chamado();
+
+            chamado = await chamado.consultarPorId(numeroChamado);
+
+
+
+        }
     }
 }

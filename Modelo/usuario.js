@@ -44,4 +44,9 @@ export default class Usuario {
         const usuarioDao = new UsuarioDAO();
         return await usuarioDao.consultar();
     }
+
+    async gravar(){
+        const usuarioDao = new UsuarioDAO();
+        return await usuarioDao.gravar(this);
+    }
 }

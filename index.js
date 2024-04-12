@@ -1,6 +1,5 @@
 import express from "express";
-// import rotaDoce from './Rotas/rotaDoce.js'
-// import rotaDialogFlow from './Rotas/rotaDialogFlow.js'
+import rotaDialogFlow from './Rotas/rotaDialogFlow.js'
 import session from "express-session";
 
 const app = express();
@@ -14,8 +13,7 @@ app.use(session({
 }))
 // app.use(express.static('./Publico'));
 
-// app.use('/doces', rotaDoce);
-// app.use('/dialogflow', rotaDialogFlow);
+app.use('/dialogflow', rotaDialogFlow);
 
 app.listen(3000, () => {
     console.log(`Servidor rodando em http://localhost:3000`);

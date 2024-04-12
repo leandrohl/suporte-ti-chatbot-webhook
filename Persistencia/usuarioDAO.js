@@ -17,4 +17,15 @@ export default class UsuarioDAO {
         return listaUsuarios;
     }
 
+    async gravar(usuario) {
+        if (usuario instanceof Usuario) {
+            const conexao = await conectar();
+            const sql = 'INSERT INTO usuario (nome, email) VALUES (?, ?)';
+            const parametros = [usuario.usuarioNome, usuario.usuarioEmail];
+
+            const resultado = await conexao.query(sql, parametros);
+            usuario.usuarioId = resultado[0].insertId;
+        }
+    }
+
 }

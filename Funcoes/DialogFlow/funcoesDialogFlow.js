@@ -1,6 +1,7 @@
 //url de referência https://cloud.google.com/dialogflow/es/docs/integrations/dialogflow-messenger?hl=pt-br
 
-import Doce from "../../Modelo/doce.js";
+import Categoria from "../../Modelo/categoria.js";
+import Chamado from "../../Modelo/chamado.js";
 
 //Mensagem tem como alvo o DialogFlow Messenger
 export function criarMessengerCard() {
@@ -52,31 +53,27 @@ export function criarCustomCard() {
     }
 }
 
-//Função que gerar Cards de doces para o DialogFlow
+//Função que gerar Cards de categorias para o DialogFlow
 //Ambiente suportado: "CUSTOM" e "Messenger"
-export async function obterCardsDoces(tipo = "custom") { //tipo = "custom" ou "messenger"
-    //Recuperar os doces e estilizá-los no formato Card do DialogFlow
-    //Alimentar cada card com informações dos doces
-    const doce = new Doce();
-    const listaDoces = await doce.consultar("");
+export async function obterCardsCategorias(tipo = "custom") { 
+    const categoria = new Categoria();
+    const listaCategorias = await categoria.consultar();
     const listaCards = [];
-    //alt + shift + f --> corrige automaticamente a identação do código
-    for (const doce of listaDoces) {
+    for (const categoria of listaCategorias) {
         let card;
         if (tipo == "custom") {
             card = criarCustomCard();
-            card['card']['title'] = doce.descricao;
-            card['card']['subtitle'] = "Preço: R$" + doce.preco + " \n" + doce.listaIngredientes;
-            card['card']['imageUri'] = doce.urlImagem;
+            card['card']['title'] = categoria.categoriaDescricao;
+            card['card']['subtitle'] = "Prazo de atendimento: " + categoria.categoriaPrazoAtendimento;
+            card['card']['imageUri'] = categoria.categoriaUrlImagem;
             card['card']['buttons'][0]['text'] = "Mais informações";
             card['card']['buttons'][0]['postback'] = "http://unoeste.br"
         }
         else if (tipo == "messenger") {
             card = criarMessengerCard();
-            card['title'] = doce.descricao;
-            card['subtitle'] = "Preço: R$" + doce.preco + " \n" + doce.listaIngredientes;
-            card['image']['src']['rawUrl'] = doce.urlImagem;
-            //card.image.src.rawUrl = servico.urlImagem;
+            card['title'] = categoria.categoriaDescricao;
+            card['subtitle'] = "Prazo de atendimento: " + categoria.categoriaPrazoAtendimento;
+            card['image']['src']['rawUrl'] = categoria.categoriaUrlImagem;
             card['actionLink'] = "http://unoeste.br";
 
         }

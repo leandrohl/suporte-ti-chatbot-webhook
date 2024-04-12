@@ -65,9 +65,9 @@ export default class Chamado {
         await chamadoDao.gravar(this);
     }
 
-    async consultar(){
+    async consultarPorId(numeroChamado){
         const chamadoDao = new ChamadoDAO();
-        return await chamadoDao.consultar();
+        return await chamadoDao.consultar(numeroChamado);
     }
 
 }

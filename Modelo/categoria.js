@@ -50,8 +50,14 @@ export default class Categoria {
         }
     }
 
+
     async consultar(){
         const categoriaDao = new CategoriaDAO();
         return await categoriaDao.consultar();
+    }
+
+    async consultarPeloNome(nomeCategoria){
+        const categoriaDao = new CategoriaDAO();
+        return await categoriaDao.consultarPeloNome(nomeCategoria);
     }
 }

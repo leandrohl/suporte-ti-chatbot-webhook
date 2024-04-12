@@ -7,25 +7,26 @@ export default class ChamadoDAO {
         if (chamado instanceof Chamado) {
             const conexao = await conectar();
             const sql = 'INSERT INTO chamado (nomeTecnico, nivelPrioridade, categoriaId, usuarioId) VALUES (?, ?, ?, ?)';
-            const parametros = [docchamadoe.nomeTecnico, chamado.nivelPrioridade, chamado.categoria.categoriaId, chamado.usuario.usuarioId];
+            const parametros = [chamado.chamadoNomeTecnico, chamado.chamadoNivelPrioridade, chamado.categoria.categoriaId, chamado.usuario.usuarioId];
 
             const resultado = await conexao.query(sql, parametros);
             chamado.chamadoId = resultado[0].insertId;
         }
     }
 
-    async consultar() {
+    async consultar(numeroChamado) {
         const conexao = await conectar();
-        const sql = 'SELECT * FROM chamado';
+        const sql = 'SELECT * FROM chamado WHERE id = ?';
+        const parametros = [numeroChamado]
 
-        const [ registros ] = await conexao.query(sql);
-        const listaChamados = []
+        const [ registros ] = await conexao.query(sql, parametros);
+        let chamado = null;
 
         for (const registro of registros) {
-            const chamado = new Chamado(registro.id, registro.nomeTecnico, registro.nivelPrioridade, registro.categoriaId, registro.usuarioId);
-            listaChamados.push(chamado);
+            chamado = new Chamado(registro.id, registro.nomeTecnico, registro.nivelPrioridade, registro.categoriaId, registro.usuarioId);
+            break;
         }
-        return listaChamados;
+        return chamado;
     }
 
 }
