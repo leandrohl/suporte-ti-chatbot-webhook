@@ -60,4 +60,9 @@ export default class Categoria {
         const categoriaDao = new CategoriaDAO();
         return await categoriaDao.consultarPeloNome(nomeCategoria);
     }
+
+    async consultarPorId(id){
+        const categoriaDao = new CategoriaDAO();
+        return await categoriaDao.consultarPorId(id);
+    }
 }

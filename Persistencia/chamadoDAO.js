@@ -1,5 +1,7 @@
 
+import Categoria from "../Modelo/categoria.js";
 import Chamado from "../Modelo/chamado.js";
+import Usuario from "../Modelo/usuario.js";
 import conectar from "./conexao.js";
 
 export default class ChamadoDAO {
@@ -23,7 +25,7 @@ export default class ChamadoDAO {
         let chamado = null;
 
         for (const registro of registros) {
-            chamado = new Chamado(registro.id, registro.nomeTecnico, registro.nivelPrioridade, registro.categoriaId, registro.usuarioId);
+            chamado = new Chamado(registro.id, registro.nomeTecnico, registro.nivelPrioridade, new Categoria(registro.categoriaId), new Usuario(registro.usuarioId) );
             break;
         }
         return chamado;

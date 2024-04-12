@@ -179,8 +179,64 @@ export default class DialogFlowCtrl{
 
             chamado = await chamado.consultarPorId(numeroChamado);
 
+            if (chamado != null) {
+                let categoria = new Categoria();
+                categoria = await categoria.consultarPorId(chamado.categoria.categoriaId);
 
+                if (ambienteOrigem) {
+                    respostaDF['fulfillmentMessages'] = [
+                        {
+                            "text": {
+                                "text": [
+                                    "Segue o status do seu chamado!",
+                                    "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
+                                    "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                    "Categoria: " + categoria.categoriaDescricao,
+                                    "Prazo para atendimento (em horas): " + categoria.categoriaPrazoAtendimento
+                                ]
+                            }
+                        }
+                    ];
+                    resposta.json(respostaDF);
+                }
+                else {
+                    respostaDF['fulfillmentMessages'] = {
+                        "payload": {
+                            "richContent": [[
+                                {
+                                    "type": "description",
+                                    "title": "Segue o status do seu chamado!",
+                                    "text": [
+                                        "Seu chamado foi registrado com sucesso!",
+                                        "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
+                                        "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                        "Categoria: " + categoria.categoriaDescricao,
+                                        "Prazo para atendimento (em horas): " + categoria.categoriaPrazoAtendimento
+                                    ]
+                                }
+                            ]]
+                            }
+                        }
+                    resposta.json(respostaDF);
+                }
 
+            } else {
+                respostaDF['fulfillmentMessages'] = {
+                    "payload": {
+                        "richContent": [
+                            {
+                                "type":"description",
+                                "title":"Código Inválido",
+                                "text":[
+                                    "Infelizmente não encontramos nenhum chamado com esse código!",
+                                    erro.message
+                                ]
+                            }
+                        ]
+                    }
+                }
+                resposta.json(respostaDF);
+            }
         }
     }
 }
