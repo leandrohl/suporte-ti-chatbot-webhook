@@ -8,8 +8,8 @@ export default class ChamadoDAO {
     async gravar(chamado) {
         if (chamado instanceof Chamado) {
             const conexao = await conectar();
-            const sql = 'INSERT INTO chamado (nomeTecnico, nivelPrioridade, categoriaId, usuarioId) VALUES (?, ?, ?, ?)';
-            const parametros = [chamado.chamadoNomeTecnico, chamado.chamadoNivelPrioridade, chamado.categoria.categoriaId, chamado.usuario.usuarioId];
+            const sql = 'INSERT INTO chamado (nivelPrioridade, categoriaId, usuarioId) VALUES (?, ?, ?)';
+            const parametros = [chamado.chamadoNivelPrioridade, chamado.categoria.categoriaId, chamado.usuario.usuarioId];
 
             const resultado = await conexao.query(sql, parametros);
             chamado.chamadoId = resultado[0].insertId;
@@ -25,7 +25,7 @@ export default class ChamadoDAO {
         let chamado = null;
 
         for (const registro of registros) {
-            chamado = new Chamado(registro.id, registro.nomeTecnico, registro.nivelPrioridade, new Categoria(registro.categoriaId), new Usuario(registro.usuarioId) );
+            chamado = new Chamado(registro.id, registro.nivelPrioridade, new Categoria(registro.categoriaId), new Usuario(registro.usuarioId) );
             break;
         }
         return chamado;

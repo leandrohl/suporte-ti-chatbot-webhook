@@ -125,7 +125,7 @@ export default class DialogFlowCtrl{
                 let categoriaObj = new Categoria();
                 const nomeCategoria = global.sessao[sessaoDF].categoria;
                 categoriaObj = await categoriaObj.consultarPeloNome(nomeCategoria);
-                const chamado = new Chamado(0, "Fernando", nivelPrioridade, categoriaObj, usuario);
+                const chamado = new Chamado(0, nivelPrioridade, categoriaObj, usuario);
 
                 await chamado.gravar();
 
@@ -136,7 +136,7 @@ export default class DialogFlowCtrl{
                                 "text": [
                                     "Seu chamado foi registrado com sucesso!",
                                     "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
-                                    "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                    "Nome do técnico a quem foi atribuído o atendimento: " + chamado.categoria.categoriaNomeTecnico,
                                     "Prazo para atendimento (em horas): " + chamado.categoria.categoriaPrazoAtendimento
                                 ]
                             }
@@ -153,7 +153,7 @@ export default class DialogFlowCtrl{
                                     "title": "Seu chamado foi registrado com sucesso!",
                                     "text": [
                                         "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
-                                        "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                        "Nome do técnico a quem foi atribuído o atendimento: " + chamado.categoria.categoriaNomeTecnico,
                                         "Prazo para atendimento (em horas): " + chamado.categoria.categoriaPrazoAtendimento
                                     ]
                                 }
@@ -163,21 +163,34 @@ export default class DialogFlowCtrl{
                     resposta.json(respostaDF);
                 }
             } catch (erro) {
-                respostaDF['fulfillmentMessages'] = {
-                    "payload": {
-                        "richContent": [
-                            {
-                                "type":"description",
-                                "title":"Erro ao salvar chamado",
-                                "text":[
+                if (ambienteOrigem) {
+                    respostaDF['fulfillmentMessages'] = [
+                        {
+                            "text": {
+                                "text": [
                                     "Infelizmente não foi possível salvar seu chamado.",
                                     erro.message
-                                ]
+                                 ]
                             }
-                        ]
-                    }
+                        }
+                    ];
+                    resposta.json(respostaDF);
+                } else {
+                    respostaDF['fulfillmentMessages'] = [{
+                        "payload": {
+                            "richContent": [[
+                                {
+                                    "type":"description",
+                                    "title":"Erro ao salvar chamado",
+                                    "text":[
+                                        "Infelizmente não foi possível salvar seu chamado.",
+                                        erro.message  ]
+                                }
+                            ]]
+                            }
+                        }]
+                    resposta.json(respostaDF);
                 }
-                resposta.json(respostaDF);
             }
         } else if (intencao == 'ConsultarChamado') {
             let respostaDF = { fulfillmentMessages: [] };
@@ -201,7 +214,7 @@ export default class DialogFlowCtrl{
                                     "Email do demandante: " + usuario.usuarioEmail,
                                     "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
                                     "Nível de Prioridade: " + chamado.chamadoNivelPrioridade,
-                                    "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                    "Nome do técnico a quem foi atribuído o atendimento: " + categoria.categoriaNomeTecnico,
                                     "Categoria: " + categoria.categoriaDescricao,
                                     "Prazo para atendimento (em horas): " + categoria.categoriaPrazoAtendimento
                                 ]
@@ -223,7 +236,7 @@ export default class DialogFlowCtrl{
                                         "Email do demandante: " + usuario.usuarioEmail,
                                         "Nº do chamado gerado (protocolo): " + chamado.chamadoId,
                                         "Nível de Prioridade: " + chamado.chamadoNivelPrioridade,
-                                        "Nome do técnico a quem foi atribuído o atendimento: " + chamado.chamadoNomeTecnico,
+                                        "Nome do técnico a quem foi atribuído o atendimento: " + categoria.categoriaNomeTecnico,
                                         "Categoria: " + categoria.categoriaDescricao,
                                         "Prazo para atendimento (em horas): " + categoria.categoriaPrazoAtendimento
                                     ]
@@ -235,20 +248,35 @@ export default class DialogFlowCtrl{
                 }
 
             } else {
-                respostaDF['fulfillmentMessages'] = {
-                    "payload": {
-                        "richContent": [
-                            {
-                                "type":"description",
-                                "title":"Código Inválido",
-                                "text":[
+                if (ambienteOrigem) {
+                    respostaDF['fulfillmentMessages'] = [
+                        {
+                            "text": {
+                                "text": [
+                                    "Código Inválido",
                                     "Infelizmente não encontramos nenhum chamado com esse código!",
                                 ]
                             }
-                        ]
-                    }
+                        }
+                    ];
+                    resposta.json(respostaDF);
+                } else {
+                    respostaDF['fulfillmentMessages'] = [{
+                        "payload": {
+                            "richContent": [[
+                                {
+                                    "type":"description",
+                                    "title":"Código Inválido",
+                                    "text":[
+                                        "Infelizmente não encontramos nenhum chamado com esse código!",
+                                    ]
+                                }
+                            ]]
+                            }
+                        }]
+                    resposta.json(respostaDF);
                 }
-                resposta.json(respostaDF);
+                
             }
         }
     }

@@ -2,14 +2,12 @@ import ChamadoDAO from "../Persistencia/chamadoDAO.js";
 
 export default class Chamado {
     #chamadoId
-    #chamadoNomeTecnico
     #chamadoNivelPrioridade
     #categoria
     #usuario
 
-    constructor(chamadoId, chamadoNomeTecnico, chamadoNivelPrioridade, categoria, usuario) {
+    constructor(chamadoId, chamadoNivelPrioridade, categoria, usuario) {
         this.#chamadoId = chamadoId;
-        this.#chamadoNomeTecnico = chamadoNomeTecnico
         this.#chamadoNivelPrioridade = chamadoNivelPrioridade
         this.#categoria = categoria
         this.#usuario = usuario
@@ -20,13 +18,6 @@ export default class Chamado {
     }
     set chamadoId (chamadoId) {
         this.#chamadoId = chamadoId;
-    }
-
-    get chamadoNomeTecnico(){
-        return this.#chamadoNomeTecnico;
-    }
-    set chamadoNomeTecnico (chamadoNomeTecnico) {
-        this.#chamadoNomeTecnico = chamadoNomeTecnico;
     }
 
     get chamadoNivelPrioridade(){
@@ -53,7 +44,6 @@ export default class Chamado {
     toJSON(){
         return {
             id: this.#chamadoId,
-            nomeTecnico: this.#chamadoNomeTecnico,
             nivelPrioridade: this.chamadoNivelPrioridade,
             categoria: this.categoria.categoriaId,
             usuario: this.usuario.usuarioId

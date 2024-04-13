@@ -5,12 +5,14 @@ export default class Categoria {
     #categoriaDescricao
     #categoriaPrazoAtendimento
     #categoriaUrlImagem
+    #categoriaNomeTecnico
 
-    constructor(categoriaId, categoriaDescricao, categoriaPrazoAtendimento, categoriaUrlImagem) {
+    constructor(categoriaId, categoriaDescricao, categoriaPrazoAtendimento, categoriaUrlImagem, categoriaNomeTecnico) {
         this.#categoriaId = categoriaId;
         this.#categoriaDescricao = categoriaDescricao
         this.#categoriaPrazoAtendimento = categoriaPrazoAtendimento
         this.#categoriaUrlImagem = categoriaUrlImagem
+        this.#categoriaNomeTecnico = categoriaNomeTecnico
     }
 
     get categoriaId(){
@@ -41,12 +43,21 @@ export default class Categoria {
         this.#categoriaUrlImagem = categoriaUrlImagem;
     }
 
+    get categoriaNomeTecnico(){
+        return this.#categoriaNomeTecnico;
+    }
+    set categoriaNomeTecnico (categoriaNomeTecnico) {
+        this.#categoriaNomeTecnico = categoriaNomeTecnico;
+    }
+
+
     toJSON(){
         return {
             id: this.#categoriaId,
             descricao: this.#categoriaDescricao,
             prazoAtendimento: this.#categoriaPrazoAtendimento,
-            urlImagem: this.#categoriaUrlImagem
+            urlImagem: this.#categoriaUrlImagem,
+            nomeTecnico: this.#categoriaNomeTecnico
         }
     }
 

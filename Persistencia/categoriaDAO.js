@@ -11,7 +11,7 @@ export default class CategoriaDAO {
         const listaCategorias = []
 
         for (const registro of registros) {
-            const categoria = new Categoria(registro.id, registro.descricao, registro.prazoAtendimento, registro.urlImagem);
+            const categoria = new Categoria(registro.id, registro.descricao, registro.prazoAtendimento, registro.urlImagem, registro.nomeTecnico);
             listaCategorias.push(categoria);
         }
         return listaCategorias;
@@ -26,7 +26,7 @@ export default class CategoriaDAO {
         let categoria = null;
 
         for (const registro of registros) {
-            categoria = new Categoria(registro.id, registro.descricao, registro.prazoAtendimento, registro.urlImagem);
+            categoria = new Categoria(registro.id, registro.descricao, registro.prazoAtendimento, registro.urlImagem, registro.nomeTecnico);
             break;
         }
         return categoria;
@@ -42,7 +42,7 @@ export default class CategoriaDAO {
         let categoria = null;
 
         for (const registro of registros) {
-            categoria = new Categoria(registro.id, registro.descricao, registro.prazoAtendimento, registro.urlImagem);
+            categoria = new Categoria(registro.id, registro.descricao, registro.prazoAtendimento, registro.urlImagem, registro.nomeTecnico);
             break;
         }
         return categoria;
